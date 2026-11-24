@@ -458,7 +458,7 @@ RectTransform:
   m_GameObject: {fileID: 717010781}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.001, y: 0.001, z: 0.001}
+  m_LocalScale: {x: 0.004, y: 0.004, z: 0.004}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 935430551}
@@ -482,6 +482,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AvisoInteractuar
   altura: 0.3
+  texto: {fileID: 0}
 --- !u!1 &935430550
 GameObject:
   m_ObjectHideFlags: 0
@@ -594,7 +595,6 @@ MonoBehaviour:
   distanciaRecorrido: 15
   distanciaSalida: 15
   spawnearAlIniciar: 1
-  distanciaMaxima: 2.5
   atendido: 0
   alSerAtendido:
     m_PersistentCalls:
@@ -804,7 +804,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Pulsa el gatillo para interactuar
+  m_text: Pulsa el gatillo para preguntar
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -980,6 +980,14 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5203420381209057329, guid: ef6dc630746a9614d8621d25282852da, type: 3}
+      propertyPath: alTerminar.m_PersistentCalls.m_Calls.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5203420381209057329, guid: ef6dc630746a9614d8621d25282852da, type: 3}
+      propertyPath: alTerminar.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 5507758570743769922, guid: ef6dc630746a9614d8621d25282852da, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -988,7 +996,8 @@ PrefabInstance:
       propertyPath: m_Material
       value: 
       objectReference: {fileID: 1819822387}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5203420381209057329, guid: ef6dc630746a9614d8621d25282852da, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

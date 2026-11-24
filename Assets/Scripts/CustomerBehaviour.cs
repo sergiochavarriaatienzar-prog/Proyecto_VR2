@@ -1,10 +1,12 @@
+// CustomerBehaviour.cs (versión de tu amigo, solo con los cambios para que encaje con NPCSistema)
+// CAMBIOS:
+//  1. Fuera toda la parte de interacción (hover, mano, cartel, gatillo, distanciaMaxima
+//     y el RequireComponent de XRSimpleInteractable): eso ahora lo hace NPCSistema.
+//  2. Al llegar al mostrador enciende NPCSistema (antes no se puede hablar con él).
+//  3. MarcarComoAtendido se llama desde el evento alTerminar de NPCSistema (en el prefab).
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.XR.Interaction.Toolkit;
-using UnityEngine.XR.Interaction.Toolkit.Interactables;
-using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
-[RequireComponent(typeof(XRSimpleInteractable))]
 public class CustomerBehaviour : MonoBehaviour
 {
     enum Estado { CaminandoAlMostrador, Esperando, Yendose }
@@ -17,9 +19,6 @@ public class CustomerBehaviour : MonoBehaviour
     [SerializeField] float distanciaSalida = 5f;
     [SerializeField] bool spawnearAlIniciar = true;
 
-    [Header("Interaccion VR")]
-    [SerializeField] float distanciaMaxima = 2.5f;
-
     [Header("Estado y Eventos")]
     [SerializeField] bool atendido = false;
     public UnityEvent alSerAtendido;
@@ -27,22 +26,15 @@ public class CustomerBehaviour : MonoBehaviour
     [Header("Debug (solo lectura)")]
     [SerializeField] Estado estado = Estado.CaminandoAlMostrador;
 
-    XRSimpleInteractable interactable;
-    Collider col;
-    XRBaseInputInteractor mano;
-
     Vector3 posicionInicial;
     Vector3 posicionMostrador;
     Vector3 direccionAvance;
-    bool avisoVisible;
     bool esInstanciaSpawneada;
 
     public bool Atendido => atendido;
 
     void Awake()
     {
-        interactable = GetComponent<XRSimpleInteractable>();
-        col = GetComponentInChildren<Collider>();
         atendido = false;
     }
 
@@ -56,19 +48,6 @@ public class CustomerBehaviour : MonoBehaviour
         {
             ConfigurarRecorridoDesdePosicionActual();
         }
-    }
-
-    void OnEnable()
-    {
-        interactable.hoverEntered.AddListener(OnHoverEntered);
-        interactable.hoverExited.AddListener(OnHoverExited);
-    }
-
-    void OnDisable()
-    {
-        interactable.hoverEntered.RemoveListener(OnHoverEntered);
-        interactable.hoverExited.RemoveListener(OnHoverExited);
-        OcultarAviso();
     }
 
     public void SpawnearCliente()
@@ -86,7 +65,6 @@ public class CustomerBehaviour : MonoBehaviour
         comportamiento.velocidadMovimiento = velocidadMovimiento;
         comportamiento.distanciaRecorrido = distanciaRecorrido;
         comportamiento.distanciaSalida = distanciaSalida;
-        comportamiento.distanciaMaxima = distanciaMaxima;
         comportamiento.spawnearAlIniciar = false;
         comportamiento.ConfigurarRecorridoDesdePosicionActual();
 
@@ -106,17 +84,6 @@ public class CustomerBehaviour : MonoBehaviour
         estado = Estado.CaminandoAlMostrador;
     }
 
-    void OnHoverEntered(HoverEnterEventArgs args)
-    {
-        mano = args.interactorObject as XRBaseInputInteractor;
-    }
-
-    void OnHoverExited(HoverExitEventArgs args)
-    {
-        mano = null;
-        OcultarAviso();
-    }
-
     void Update()
     {
         switch (estado)
@@ -126,6 +93,10 @@ public class CustomerBehaviour : MonoBehaviour
                 {
                     estado = Estado.Esperando;
                     Debug.Log("Cliente: ha llegado y se queda esperando.", this);
+
+                    // CAMBIO: ya ha llegado, ahora sí se puede hablar con él
+                    NPCSistema conversacion = GetComponent<NPCSistema>();
+                    if (conversacion != null) conversacion.enabled = true;
                 });
                 break;
 
@@ -144,20 +115,6 @@ public class CustomerBehaviour : MonoBehaviour
                 }
                 break;
         }
-
-        // Mostrar aviso solo cuando está esperando, cerca y apuntado
-        bool puedoInteractuar = mano != null && EstaCerca() && estado == Estado.Esperando && !atendido;
-        if (puedoInteractuar && !avisoVisible) MostrarAviso();
-        else if (!puedoInteractuar && avisoVisible) OcultarAviso();
-
-        // Interacción con el gatillo (igual que en Freidora)
-        if (mano != null && mano.activateInput.ReadWasPerformedThisFrame())
-        {
-            if (puedoInteractuar)
-            {
-                MarcarComoAtendido();
-            }
-        }
     }
 
     void MoverHacia(Vector3 destino, System.Action alLlegar)
@@ -175,12 +132,12 @@ public class CustomerBehaviour : MonoBehaviour
         }
     }
 
+    // CAMBIO: lo llama el evento alTerminar de NPCSistema (después del "¡Gracias!")
     public void MarcarComoAtendido()
     {
         if (atendido) return;
 
         atendido = true;
-        OcultarAviso();
         Debug.Log("Cliente: marcado como atendido.", this);
         alSerAtendido.Invoke();
         IniciarSalida();
@@ -190,29 +147,5 @@ public class CustomerBehaviour : MonoBehaviour
     {
         if (estado == Estado.Yendose) return;
         estado = Estado.Yendose;
-    }
-
-    bool EstaCerca()
-    {
-        if (Camera.main == null) return false;
-        return Vector3.Distance(Camera.main.transform.position, transform.position) <= distanciaMaxima;
-    }
-
-    void MostrarAviso()
-    {
-        if (col == null || AvisoInteractuar.instancia == null) return;
-        Vector3 arriba = col.bounds.center + Vector3.up * col.bounds.extents.y;
-        AvisoInteractuar.instancia.Mostrar(arriba);
-        avisoVisible = true;
-    }
-
-    void OcultarAviso()
-    {
-        if (!avisoVisible) return;
-        if (AvisoInteractuar.instancia != null)
-        {
-            AvisoInteractuar.instancia.Ocultar();
-        }
-        avisoVisible = false;
     }
 }

@@ -2,6 +2,8 @@
 // El cartel "Pulsa el gatillo para interactuar". Solo hay uno en la escena
 // y lo usan todos los Interactuable: se pone encima del objeto al que apuntas
 // y se esconde al dejar de apuntar. Va en el Canvas (World Space) del cartel.
+// NUEVO (sprint 2): Mostrar puede recibir otro mensaje (ej. "para preguntar").
+using TMPro;          // TMP_Text
 using UnityEngine;
 
 public class AvisoInteractuar : MonoBehaviour
@@ -11,6 +13,7 @@ public class AvisoInteractuar : MonoBehaviour
     public static AvisoInteractuar instancia;
 
     [SerializeField] float altura = 0.15f;   // metros por encima del objeto
+    [SerializeField] TMP_Text texto;         // NUEVO: el Text (TMP) del cartel
 
     // El Canvas tiene que estar ACTIVO al empezar: aquí se apunta y se esconde.
     void Awake()
@@ -19,8 +22,10 @@ public class AvisoInteractuar : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    public void Mostrar(Vector3 arribaDelObjeto)
+    // Si no se le pasa mensaje, pone el de siempre (así lo de antes sigue igual)
+    public void Mostrar(Vector3 arribaDelObjeto, string mensaje = "Pulsa el gatillo para interactuar")
     {
+        if (texto != null) texto.text = mensaje;
         transform.position = arribaDelObjeto + Vector3.up * altura;
         gameObject.SetActive(true);
     }
